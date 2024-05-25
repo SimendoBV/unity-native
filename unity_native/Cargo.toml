@@ -10,7 +10,13 @@ keywords.workspace = true
 categories.workspace = true
 readme = "../README.md"
 
+[features]
+default = ["log", "profiler"]
+log = ["dep:log"]
+profiler = []
+
 [dependencies]
 unity_native_sys.workspace = true
 unity_native_proc_macro.workspace = true
 thiserror.workspace = true
+log = { workspace = true, optional = true }

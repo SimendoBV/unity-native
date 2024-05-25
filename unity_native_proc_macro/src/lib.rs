@@ -14,7 +14,7 @@ pub fn unity_plugin_load(_: TokenStream, item: TokenStream) -> TokenStream {
         #[no_mangle]
         #[allow(non_snake_case)]
         extern "stdcall" fn UnityPluginLoad(
-            interfaces: *mut unity_native::ffi::IUnityInterfaces,
+            interfaces: *mut unity_native::RawInterfacesPtr,
         ) {
             let interfaces = unsafe { unity_native::UnityInterfaces::new(interfaces).unwrap() };
 

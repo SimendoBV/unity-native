@@ -1,7 +1,13 @@
+#[cfg(feature = "log")]
 pub mod logger;
+
+#[cfg(feature = "profiler")]
 pub mod profiler;
+
+pub use ffi::IUnityInterfaces as RawInterfacesPtr;
 use thiserror::Error;
-pub use unity_native_sys as ffi;
+use unity_native_sys as ffi;
+
 pub use unity_native_proc_macro::*;
 
 #[macro_use]
@@ -11,13 +17,15 @@ use std::ptr::NonNull;
 
 #[derive(Debug)]
 pub struct UnityInterfaces {
-    ptr: NonNull<ffi::IUnityInterfaces>
+    ptr: NonNull<ffi::IUnityInterfaces>,
 }
 
 //TODO: Is this actually true? Docs are unclear, gotta test manually probably
 unsafe impl Send for UnityInterfaces {}
 
-pub unsafe trait UnityInterface: TryFrom<NonNull<Self::FFIType>, Error = Self::FFIConversionError> {
+pub unsafe trait UnityInterface:
+    TryFrom<NonNull<Self::FFIType>, Error = Self::FFIConversionError>
+{
     type FFIType;
     type FFIConversionError;
     const GUID: ffi::UnityInterfaceGUID;
@@ -27,28 +35,26 @@ pub unsafe trait UnityInterface: TryFrom<NonNull<Self::FFIType>, Error = Self::F
 pub enum GetError<T> {
     #[error("Null pointer provided")]
     NullPtr,
-    
+
     #[error("Conversion from C-type to wrapper failed: {0}")]
-    ConversionError(#[source] T)
+    ConversionError(#[source] T),
 }
 
 #[derive(Error, Debug)]
 pub enum UnityInterfaceCreateErr {
     #[error("Null pointer provided")]
-    NullPtr
+    NullPtr,
 }
 
 impl UnityInterfaces {
     pub unsafe fn new(ptr: *mut ffi::IUnityInterfaces) -> Result<Self, UnityInterfaceCreateErr> {
-        NonNull::new(ptr).map(|nonnull| UnityInterfaces {
-            ptr: nonnull
-        }).ok_or(UnityInterfaceCreateErr::NullPtr)
+        NonNull::new(ptr)
+            .map(|nonnull| UnityInterfaces { ptr: nonnull })
+            .ok_or(UnityInterfaceCreateErr::NullPtr)
     }
 
-    pub fn get<T: UnityInterface>(&self) -> Result<T, GetError<T::FFIConversionError>> {        
-        let iface = unsafe { 
-            self.ptr.as_ref().GetInterface.map(|f| f(T::GUID))
-        };
+    pub fn get<T: UnityInterface>(&self) -> Result<T, GetError<T::FFIConversionError>> {
+        let iface = unsafe { self.ptr.as_ref().GetInterface.map(|f| f(T::GUID)) };
 
         let as_nonnull = iface.and_then(|ptr| NonNull::new(ptr as *mut T::FFIType));
         if as_nonnull.is_none() {
