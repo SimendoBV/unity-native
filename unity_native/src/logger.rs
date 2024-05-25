@@ -1,25 +1,25 @@
-#![allow(non_upper_case_globals)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-
-
-pub mod ffi {
-    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-}
-
 use std::{ffi::CString, ptr::NonNull};
 
-use ffi::*;
-
-#[derive(Debug)]
-pub struct UnityInterfaces {
-    ptr: NonNull<IUnityInterfaces>
-}
-
-unsafe impl Send for UnityInterfaces {}
+use crate::{ffi, unity_api_guid, UnityInterface};
 
 pub struct UnityLogger {
-    ptr: NonNull<IUnityLog>
+    ptr: NonNull<ffi::IUnityLog>
+}
+
+unsafe impl UnityInterface for UnityLogger {
+    type FFIType = ffi::IUnityLog;
+    type FFIConversionError = ();
+    const GUID: ffi::UnityInterfaceGUID = unity_api_guid!(0x9E7507FA5B444D5D 0x92FB979515EA83FC);
+}
+
+impl TryFrom<NonNull<ffi::IUnityLog>> for UnityLogger {
+    type Error = ();
+
+    fn try_from(value: NonNull<ffi::IUnityLog>) -> Result<Self, Self::Error> {
+        Ok(Self {
+            ptr: value
+        })
+    }
 }
 
 pub enum UnityLogType {
@@ -48,11 +48,6 @@ impl UnityLogger {
 
         unsafe {
             let logger_raw = self.ptr.as_ref();
-
-            if logger_raw.Log.is_none() {
-                return Err(());
-            } 
-
             let logfn = logger_raw.Log.unwrap();
 
             logfn(level.into(), message_c_str.as_ptr(), filename_c_str.as_ptr(), line_c);
@@ -78,47 +73,30 @@ impl UnityLogger {
     }
 }
 
-unsafe impl UnityInterface for UnityLogger {
-    type FFIType = IUnityLog;
-
-    const GUID: UnityInterfaceGUID = UnityInterfaceGUID {
-        m_GUIDHigh: 0x9E7507FA5B444D5D,
-        m_GUIDLow: 0x92FB979515EA83FC,
+#[macro_export]
+macro_rules! info {
+    ($logger:expr, $msg:expr) => {
+        $logger.log_info($msg, file!(), line!())
     };
-
-    fn from_ffi(ptr: NonNull<Self::FFIType>) -> Result<Self, ()> where Self: Sized {
-        Ok(Self {
-            ptr
-        })
-    }
 }
 
-pub unsafe trait UnityInterface {
-    type FFIType;
-    const GUID: UnityInterfaceGUID;
-
-    fn from_ffi(ptr: NonNull<Self::FFIType>) -> Result<Self, ()> where Self: Sized;
+#[macro_export]
+macro_rules! warning {
+    ($logger:expr, $msg:expr) => {
+        $logger.log_warning($msg, file!(), line!())
+    };
 }
 
-impl UnityInterfaces {
-    pub fn new(ptr: *mut IUnityInterfaces) -> Result<Self, ()> {
-        NonNull::new(ptr).map(|nonnull| UnityInterfaces {
-            ptr: nonnull
-        }).ok_or(())
-    }
+#[macro_export]
+macro_rules! error {
+    ($logger:expr, $msg:expr) => {
+        $logger.log_error($msg, file!(), line!())
+    };
+}
 
-    pub fn get<T: UnityInterface>(&self) -> Result<T, ()> {        
-        let iface = unsafe { 
-            self.ptr.as_ref().GetInterface.map(|f| f(T::GUID))
-        };
-
-        let as_nonnull = iface.and_then(|ptr| NonNull::new(ptr as *mut T::FFIType));
-        if as_nonnull.is_none() {
-            return Err(());
-        }
-
-        let iface = as_nonnull.unwrap();
-
-        T::from_ffi(iface)
-    }
+#[macro_export]
+macro_rules! exception {
+    ($logger:expr, $msg:expr) => {
+        $logger.log_exception($msg, file!(), line!())
+    };
 }

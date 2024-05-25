@@ -1,0 +1,13 @@
+[package]
+name = "unity_native_sys"
+description = "The raw FFI for the Unity Native Plugin API"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license-file = "LICENSE"
+keywords.workspace = true
+categories.workspace = true
+
+[build-dependencies]
+bindgen.workspace = true

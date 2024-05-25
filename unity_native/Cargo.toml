@@ -1,0 +1,16 @@
+[package]
+name = "unity_native"
+description = "A Rustified wrapper around the Unity Native Plugin API"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "../README.md"
+
+[dependencies]
+unity_native_sys.workspace = true
+unity_native_proc_macro.workspace = true
+thiserror.workspace = true

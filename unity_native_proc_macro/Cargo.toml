@@ -1,0 +1,18 @@
+[package]
+name = "unity_native_proc_macro"
+description = "The derive macros for the unity_native library"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+unity_native_sys.workspace = true
+syn.workspace = true
+quote.workspace = true
