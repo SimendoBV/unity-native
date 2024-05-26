@@ -6,8 +6,6 @@ use crate::{ffi, unity_api_guid, UnityInterface};
 
 pub struct UnityLogger {
     ptr: NonNull<ffi::IUnityLog>,
-
-    max_level: log::LevelFilter,
 }
 
 unsafe impl Send for UnityLogger {}
@@ -23,16 +21,7 @@ impl TryFrom<NonNull<ffi::IUnityLog>> for UnityLogger {
     type Error = ();
 
     fn try_from(value: NonNull<ffi::IUnityLog>) -> Result<Self, Self::Error> {
-        let default_level = if cfg!(debug_assertions) {
-            LevelFilter::Debug
-        } else {
-            LevelFilter::Info
-        };
-
-        Ok(Self {
-            ptr: value,
-            max_level: default_level,
-        })
+        Ok(Self { ptr: value })
     }
 }
 
@@ -67,18 +56,12 @@ impl From<UnityLogType> for ffi::UnityLogType::Type {
 }
 
 impl UnityLogger {
-    pub fn set_level(&mut self, level: log::LevelFilter) {
-        self.max_level = level;
-        log::set_max_level(level);
+    pub fn to_rust_logger(self, initial_level: log::LevelFilter) -> UnityRustLogger {
+        log::set_max_level(initial_level);
+        UnityRustLogger { logger: self }
     }
 
-    pub fn log_generic(
-        &self,
-        level: UnityLogType,
-        msg: &str,
-        filename: &str,
-        line: u32,
-    ) -> Result<(), ()> {
+    pub fn log_generic(&self, level: UnityLogType, msg: &str, filename: &str, line: u32) {
         let line_c = std::os::raw::c_int::try_from(line).unwrap();
         let message_c_str = CString::new(msg).unwrap();
         let filename_c_str = CString::new(filename).unwrap();
@@ -94,28 +77,31 @@ impl UnityLogger {
                 line_c,
             );
         }
-
-        Ok(())
     }
 
-    pub fn log_info(&self, msg: &str, filename: &str, line: u32) -> Result<(), ()> {
+    pub fn log_info(&self, msg: &str, filename: &str, line: u32) {
         self.log_generic(UnityLogType::Info, msg, filename, line)
     }
 
-    pub fn log_warning(&self, msg: &str, filename: &str, line: u32) -> Result<(), ()> {
+    pub fn log_warning(&self, msg: &str, filename: &str, line: u32) {
         self.log_generic(UnityLogType::Warning, msg, filename, line)
     }
 
-    pub fn log_error(&self, msg: &str, filename: &str, line: u32) -> Result<(), ()> {
+    pub fn log_error(&self, msg: &str, filename: &str, line: u32) {
         self.log_generic(UnityLogType::Error, msg, filename, line)
     }
 
-    pub fn log_exception(&self, msg: &str, filename: &str, line: u32) -> Result<(), ()> {
+    pub fn log_exception(&self, msg: &str, filename: &str, line: u32) {
         self.log_generic(UnityLogType::Exception, msg, filename, line)
     }
 }
 
-impl Log for UnityLogger {
+#[repr(transparent)]
+pub struct UnityRustLogger {
+    logger: UnityLogger,
+}
+
+impl Log for UnityRustLogger {
     fn enabled(&self, metadata: &log::Metadata) -> bool {
         metadata.level() <= log::STATIC_MAX_LEVEL && metadata.level() <= log::max_level()
     }
@@ -127,13 +113,12 @@ impl Log for UnityLogger {
 
         let body = format!("{}", record.args());
 
-        self.log_generic(
+        self.logger.log_generic(
             record.level().into(),
             body.as_str(),
             record.file().unwrap_or("<unknown file>"),
             record.line().unwrap_or(0),
         )
-        .unwrap();
     }
 
     fn flush(&self) {
