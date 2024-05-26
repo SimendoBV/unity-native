@@ -367,6 +367,10 @@ impl ProfilerMarker<(), 0> {
     ) -> ManualProfilerSample<'a, 'b, (), 0> {
         self.sample_manual_with_meta(profiler, &())
     }
+
+    pub fn single_timeless(&self, profiler: &UnityProfiler) {
+        self.single_timeless_with_meta(profiler, &())
+    }
 }
 
 impl<T: MarkerMeta<N>, const N: usize> ProfilerMarker<T, N> {
@@ -409,6 +413,14 @@ impl<T: MarkerMeta<N>, const N: usize> ProfilerMarker<T, N> {
             marker: self,
             profiler,
         }
+    }
+
+    pub fn single_timeless_with_meta(&self, profiler: &UnityProfiler, meta: &T) {
+        if !profiler.is_enabled() {
+            return;
+        }
+
+        profiler.emit_event(self, EventType::Single, Some(meta));
     }
 }
 
