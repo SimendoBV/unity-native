@@ -20,3 +20,4 @@ unity_native_sys.workspace = true
 unity_native_proc_macro.workspace = true
 thiserror.workspace = true
 log = { workspace = true, optional = true }
+static_assertions.workspace = true

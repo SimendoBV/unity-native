@@ -1,10 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    "unity_native",
-    "unity_native_proc_macro",
-    "unity_native_sys"
-]
+members = ["unity_native", "unity_native_proc_macro", "unity_native_sys"]
 
 [workspace.package]
 version = "0.1.0"
@@ -24,3 +20,4 @@ syn = "2.0.66"
 quote = "1.0.36"
 thiserror = "1.0.61"
 log = "0.4.21"
+static_assertions = "1.1.0"
