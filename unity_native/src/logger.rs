@@ -1,9 +1,14 @@
 use std::{ffi::CString, ptr::NonNull};
 
-use log::{LevelFilter, Log};
+use log::Log;
 
 use crate::{ffi, unity_api_guid, UnityInterface};
 
+/// A wrapper for the Unity Logging API. It supports
+/// both manual logging using [UnityLogger::log_generic] (and friends),
+/// and supports conversion to a [UnityRustLogger], which is a wrapper
+/// for [UnityLogger] that implements the [log::Log] trait. This allows
+/// it to be used with the standard [log::log!] macros.
 pub struct UnityLogger {
     ptr: NonNull<ffi::IUnityLog>,
 }
@@ -25,6 +30,8 @@ impl TryFrom<NonNull<ffi::IUnityLog>> for UnityLogger {
     }
 }
 
+/// The different log levels
+/// supported by the Unity logging API
 pub enum UnityLogType {
     Info,
     Warning,
@@ -56,11 +63,18 @@ impl From<UnityLogType> for ffi::UnityLogType::Type {
 }
 
 impl UnityLogger {
+    /// Converts this [UnityLogger] to a [UnityRustLogger], which is a struct
+    /// compatible with the [log::Log] trait. This allows you to use
+    /// the UnityLogger with the standard log macros (see [log::log])
     pub fn to_rust_logger(self, initial_level: log::LevelFilter) -> UnityRustLogger {
         log::set_max_level(initial_level);
         UnityRustLogger { logger: self }
     }
 
+    /// Logs a generic message using the Unity Log API, with the provided
+    /// level. The filename and line are supposed to be the file and line of
+    /// the function generating the log, so using the Rust [file!] and [line!]
+    /// macros is recommended
     pub fn log_generic(&self, level: UnityLogType, msg: &str, filename: &str, line: u32) {
         let line_c = std::os::raw::c_int::try_from(line).unwrap();
         let message_c_str = CString::new(msg).unwrap();
@@ -79,23 +93,33 @@ impl UnityLogger {
         }
     }
 
+    /// Convenience wrapper for [`UnityLogger::log_generic`] with
+    /// level [`UnityLogType::Info`]
     pub fn log_info(&self, msg: &str, filename: &str, line: u32) {
         self.log_generic(UnityLogType::Info, msg, filename, line)
     }
 
+    /// Convenience wrapper for [`UnityLogger::log_generic`] with
+    /// level [`UnityLogType::Warning`]
     pub fn log_warning(&self, msg: &str, filename: &str, line: u32) {
         self.log_generic(UnityLogType::Warning, msg, filename, line)
     }
 
+    /// Convenience wrapper for [`UnityLogger::log_generic`] with
+    /// level [`UnityLogType::Error`]
     pub fn log_error(&self, msg: &str, filename: &str, line: u32) {
         self.log_generic(UnityLogType::Error, msg, filename, line)
     }
 
+    /// Convenience wrapper for [`UnityLogger::log_generic`] with
+    /// level [`UnityLogType::Exception`]
     pub fn log_exception(&self, msg: &str, filename: &str, line: u32) {
         self.log_generic(UnityLogType::Exception, msg, filename, line)
     }
 }
 
+/// Wrapper for [UnityLogger] that implements [log::Log], so it can be used with [log::log!].
+/// Created using [UnityLogger::to_rust_logger]
 #[repr(transparent)]
 pub struct UnityRustLogger {
     logger: UnityLogger,
