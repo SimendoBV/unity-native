@@ -115,34 +115,6 @@ impl UnityLogger {
     }
 }
 
-#[macro_export]
-macro_rules! info {
-    ($logger:expr, $msg:expr) => {
-        $logger.log_info($msg, file!(), line!())
-    };
-}
-
-#[macro_export]
-macro_rules! warning {
-    ($logger:expr, $msg:expr) => {
-        $logger.log_warning($msg, file!(), line!())
-    };
-}
-
-#[macro_export]
-macro_rules! error {
-    ($logger:expr, $msg:expr) => {
-        $logger.log_error($msg, file!(), line!())
-    };
-}
-
-#[macro_export]
-macro_rules! exception {
-    ($logger:expr, $msg:expr) => {
-        $logger.log_exception($msg, file!(), line!())
-    };
-}
-
 impl Log for UnityLogger {
     fn enabled(&self, metadata: &log::Metadata) -> bool {
         metadata.level() <= log::STATIC_MAX_LEVEL && metadata.level() <= log::max_level()
