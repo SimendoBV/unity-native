@@ -1,4 +1,7 @@
-#define NULL (0)
+#include <stdlib.h>
+#include <assert.h>
+
+#define Assert(x) (assert(x))
 
 #include "IUnityInterface.h"
 #include "IUnityEventQueue.h"
