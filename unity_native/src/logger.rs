@@ -51,7 +51,7 @@ impl From<log::Level> for UnityLogType {
     }
 }
 
-impl From<UnityLogType> for ffi::UnityLogType::Type {
+impl From<UnityLogType> for ffi::UnityLogType {
     fn from(value: UnityLogType) -> Self {
         match value {
             UnityLogType::Info => ffi::UnityLogType::kUnityLogTypeLog,

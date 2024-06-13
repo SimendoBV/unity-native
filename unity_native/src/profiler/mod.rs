@@ -1,10 +1,12 @@
 use std::ffi::c_void;
 use std::ffi::CString;
+use std::os::raw::c_int;
 use std::ptr::null;
 use std::ptr::null_mut;
 use std::ptr::NonNull;
 
 use thiserror::Error;
+use unity_native_sys::UnityProfilerCategoryId;
 
 use crate::ffi;
 use crate::unity_api_guid;
@@ -62,13 +64,13 @@ impl From<EventType> for ffi::UnityProfilerMarkerEventType {
     fn from(value: EventType) -> Self {
         match value {
             EventType::Begin => {
-                ffi::UnityProfilerMarkerEventType_::kUnityProfilerMarkerEventTypeBegin as u16
+                ffi::UnityProfilerMarkerEventType_::kUnityProfilerMarkerEventTypeBegin.into()
             }
             EventType::End => {
-                ffi::UnityProfilerMarkerEventType_::kUnityProfilerMarkerEventTypeEnd as u16
+                ffi::UnityProfilerMarkerEventType_::kUnityProfilerMarkerEventTypeEnd.into()
             }
             EventType::Single => {
-                ffi::UnityProfilerMarkerEventType_::kUnityProfilerMarkerEventTypeBegin as u16
+                ffi::UnityProfilerMarkerEventType_::kUnityProfilerMarkerEventTypeBegin.into()
             }
         }
     }
@@ -122,9 +124,9 @@ impl UnityProfiler {
             let create_result = createfn(
                 &mut raw_marker,
                 name_c.as_ptr(),
-                ffi::UnityBuiltinProfilerCategory_::kUnityProfilerCategoryOther as u16,
-                ffi::UnityProfilerMarkerFlag_::kUnityProfilerMarkerFlagDefault as u16,
-                N as i32,
+                ffi::UnityBuiltinProfilerCategory_::kUnityProfilerCategoryOther.into(),
+                ffi::UnityProfilerMarkerFlag_::kUnityProfilerMarkerFlagDefault.into(),
+                N as c_int,
             );
 
             if create_result != 0 {

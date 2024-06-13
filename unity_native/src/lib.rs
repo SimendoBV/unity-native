@@ -4,6 +4,8 @@ pub mod logger;
 #[cfg(feature = "profiler")]
 pub mod profiler;
 
+pub mod types;
+
 pub use ffi::IUnityInterfaces as RawUnityInterfaces;
 use thiserror::Error;
 use unity_native_sys as ffi;

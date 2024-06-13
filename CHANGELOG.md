@@ -2,6 +2,12 @@
 
 This file will document the most important changes for each released version
 
+## [v0.2.0]
+
+### Features
+- Added the basic Unity math types: Vector2/3/4(int), Quaternion, Matrix4x4
+- Changed bindgen enum generation
+
 ## [v0.1.1]
 
 ### Features
