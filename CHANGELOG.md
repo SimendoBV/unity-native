@@ -2,6 +2,12 @@
 
 This file will document the most important changes for each released version
 
+## [v0.2.1]
+
+### Changes
+
+- Added string prefixes to Rust Info/Debug/Trace logs to distinguish between them in Unity, because they all map to the Unity "info" log
+
 ## [v0.2.0]
 
 ### Features
