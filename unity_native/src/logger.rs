@@ -135,7 +135,15 @@ impl Log for UnityRustLogger {
             return;
         }
 
-        let body = format!("{}", record.args());
+        let prefix = match record.level() {
+            log::Level::Error => "",
+            log::Level::Warn => "",
+            log::Level::Info => "INFO: ",
+            log::Level::Debug => "DEBUG: ",
+            log::Level::Trace => "TRACE: ",
+        };
+
+        let body = format!("{}{}", prefix, record.args());
 
         self.logger.log_generic(
             record.level().into(),

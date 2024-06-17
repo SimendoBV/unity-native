@@ -6,7 +6,6 @@ use std::ptr::null_mut;
 use std::ptr::NonNull;
 
 use thiserror::Error;
-use unity_native_sys::UnityProfilerCategoryId;
 
 use crate::ffi;
 use crate::unity_api_guid;
