@@ -1,5 +1,23 @@
 use mint::IntoMint;
 
+macro_rules! mint_conversion {
+    ($name:ty) => {
+        impl $name {
+            #[inline]
+            pub fn from_mint(
+                val: impl IntoMint<MintType = <$name as mint::IntoMint>::MintType>,
+            ) -> Self {
+                Self::from(val.into())
+            }
+
+            #[inline]
+            pub fn to_mint(self) -> <$name as mint::IntoMint>::MintType {
+                <$name as mint::IntoMint>::MintType::from(self)
+            }
+        }
+    };
+}
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color {
@@ -105,6 +123,8 @@ impl From<<Matrix4x4 as IntoMint>::MintType> for Matrix4x4 {
     }
 }
 
+mint_conversion!(Matrix4x4);
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Quaternion {
@@ -142,6 +162,8 @@ impl From<<Quaternion as IntoMint>::MintType> for Quaternion {
     }
 }
 
+mint_conversion!(Quaternion);
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vector2 {
@@ -171,6 +193,8 @@ impl From<<Vector2 as IntoMint>::MintType> for Vector2 {
     }
 }
 
+mint_conversion!(Vector2);
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Vector2Int {
@@ -199,6 +223,8 @@ impl From<<Vector2Int as IntoMint>::MintType> for Vector2Int {
         }
     }
 }
+
+mint_conversion!(Vector2Int);
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -232,6 +258,8 @@ impl From<<Vector3 as IntoMint>::MintType> for Vector3 {
     }
 }
 
+mint_conversion!(Vector3);
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Vector3Int {
@@ -263,6 +291,8 @@ impl From<<Vector3Int as IntoMint>::MintType> for Vector3Int {
         }
     }
 }
+
+mint_conversion!(Vector3Int);
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -298,6 +328,8 @@ impl From<<Vector4 as IntoMint>::MintType> for Vector4 {
         }
     }
 }
+
+mint_conversion!(Vector4);
 
 #[cfg(test)]
 #[allow(non_snake_case)]

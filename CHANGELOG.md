@@ -2,6 +2,12 @@
 
 This file will document the most important changes for each released version
 
+## [v0.2.2]
+
+### Changes
+
+- Made conversions from mint types into native Unity math types more convenient
+
 ## [v0.2.1]
 
 ### Changes
