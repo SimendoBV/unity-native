@@ -67,8 +67,29 @@ impl UnityLogger {
     /// compatible with the [log::Log] trait. This allows you to use
     /// the UnityLogger with the standard log macros (see [log::log])
     pub fn to_rust_logger(self, initial_level: log::LevelFilter) -> UnityRustLogger {
+        self.make_rust_logger_internal(initial_level, None)
+    }
+
+    /// Same as [Self::to_rust_logger], but adds the given prefix to all logged entries
+    /// so that their source is recognizable from Unity
+    pub fn to_rust_logger_for_app(
+        self,
+        initial_level: log::LevelFilter,
+        app_name: &'static str,
+    ) -> UnityRustLogger {
+        self.make_rust_logger_internal(initial_level, Some(app_name))
+    }
+
+    fn make_rust_logger_internal(
+        self,
+        initial_level: log::LevelFilter,
+        app_name: Option<&'static str>,
+    ) -> UnityRustLogger {
         log::set_max_level(initial_level);
-        UnityRustLogger { logger: self }
+        UnityRustLogger {
+            app_prefix: app_name,
+            logger: self,
+        }
     }
 
     /// Logs a generic message using the Unity Log API, with the provided
@@ -120,8 +141,8 @@ impl UnityLogger {
 
 /// Wrapper for [UnityLogger] that implements [log::Log], so it can be used with [log::log!].
 /// Created using [UnityLogger::to_rust_logger]
-#[repr(transparent)]
 pub struct UnityRustLogger {
+    app_prefix: Option<&'static str>,
     logger: UnityLogger,
 }
 
@@ -135,15 +156,30 @@ impl Log for UnityRustLogger {
             return;
         }
 
-        let prefix = match record.level() {
+        let needs_colons = self.app_prefix.is_some()
+            || matches!(
+                record.level(),
+                log::Level::Info | log::Level::Debug | log::Level::Trace
+            );
+
+        let level_prefix = match record.level() {
             log::Level::Error => "",
             log::Level::Warn => "",
-            log::Level::Info => "INFO: ",
-            log::Level::Debug => "DEBUG: ",
-            log::Level::Trace => "TRACE: ",
+            log::Level::Info => "info",
+            log::Level::Debug => "debug",
+            log::Level::Trace => "trace",
         };
 
-        let body = format!("{}{}", prefix, record.args());
+        let app_prefix = self.app_prefix.unwrap_or("");
+
+        let colons = if needs_colons { ": " } else { "" };
+
+        let body = format!(
+            "{}{}{}",
+            format!("{} {}", app_prefix, level_prefix).trim(),
+            colons,
+            record.args()
+        );
 
         self.logger.log_generic(
             record.level().into(),
