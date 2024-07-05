@@ -331,6 +331,13 @@ impl From<<Vector4 as IntoMint>::MintType> for Vector4 {
 
 mint_conversion!(Vector4);
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Plane {
+    pub normal: Vector3,
+    pub distance: f32,
+}
+
 #[cfg(test)]
 #[allow(non_snake_case)]
 mod tests {

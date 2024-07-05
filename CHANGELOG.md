@@ -2,6 +2,12 @@
 
 This file will document the most important changes for each released version
 
+## [v0.2.4]
+
+### Changes
+
+- Added Plane type
+
 ## [v0.2.3]
 
 ### Changes
