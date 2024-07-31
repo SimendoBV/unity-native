@@ -3,6 +3,7 @@ use super::marker::ProfilerMarker;
 use super::EventType;
 use super::UnityProfiler;
 
+#[derive(Debug)]
 pub enum ScopedProfilerSample<'a, 'b, T: MarkerMeta<N>, const N: usize> {
     Disabled,
     Enabled {
@@ -11,6 +12,7 @@ pub enum ScopedProfilerSample<'a, 'b, T: MarkerMeta<N>, const N: usize> {
     },
 }
 
+#[derive(Debug)]
 pub enum ManualProfilerSample<'a, 'b, T: MarkerMeta<N>, const N: usize> {
     Disabled,
     Enabled {

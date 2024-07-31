@@ -31,6 +31,7 @@ pub struct UnityInterfaces {
 
 //TODO: Is this actually true? Docs are unclear, gotta test manually probably
 unsafe impl Send for UnityInterfaces {}
+unsafe impl Sync for UnityInterfaces {}
 
 /// The main trait implemented by all supported Unity API wrappers.
 /// This should not be implemented manually. Instead, the structs provided by this crate

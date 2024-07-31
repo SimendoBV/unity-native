@@ -17,10 +17,14 @@ mod sample;
 pub use marker::*;
 pub use sample::*;
 
+#[derive(Debug)]
 pub struct UnityProfiler {
     ptr: NonNull<ffi::IUnityProfilerV2>,
     available: bool,
 }
+
+unsafe impl Send for UnityProfiler {}
+unsafe impl Sync for UnityProfiler {}
 
 #[derive(Debug, Error)]
 pub enum ProfilerCreationError {

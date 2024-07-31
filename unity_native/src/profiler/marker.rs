@@ -8,12 +8,14 @@ use super::sample::ScopedProfilerSample;
 use super::EventType;
 use super::UnityProfiler;
 
+#[derive(Debug)]
 pub struct ProfilerMarker<T: MarkerMeta<N> = (), const N: usize = 0> {
     desc_ptr: *const ffi::UnityProfilerMarkerDesc,
     meta_type: PhantomData<T>,
 }
 
 unsafe impl<T: MarkerMeta<N>, const N: usize> Send for ProfilerMarker<T, N> {}
+unsafe impl<T: MarkerMeta<N>, const N: usize> Sync for ProfilerMarker<T, N> {}
 
 pub trait MarkerMeta<const N: usize> {
     fn get_descriptors() -> [MarkerMetaDescriptor; N];
