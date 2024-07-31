@@ -2,6 +2,13 @@
 
 This file will document the most important changes for each released version
 
+## [v0.2.5]
+
+### Changes
+
+- Derived debug traits
+- Made some interfaces Send + Sync
+
 ## [v0.2.4]
 
 ### Changes
