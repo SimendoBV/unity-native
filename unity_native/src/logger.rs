@@ -2,7 +2,7 @@ use std::{ffi::CString, ptr::NonNull};
 
 use log::Log;
 
-use crate::{ffi, unity_api_guid, UnityInterface};
+use crate::{UnityInterface, ffi, unity_api_guid};
 
 /// A wrapper for the Unity Logging API. It supports
 /// both manual logging using [UnityLogger::log_generic] (and friends),
@@ -97,9 +97,10 @@ impl UnityLogger {
     /// the function generating the log, so using the Rust [file!] and [line!]
     /// macros is recommended
     pub fn log_generic(&self, level: UnityLogType, msg: &str, filename: &str, line: u32) {
-        let line_c = std::os::raw::c_int::try_from(line).unwrap();
-        let message_c_str = CString::new(msg).unwrap();
-        let filename_c_str = CString::new(filename).unwrap();
+        let line_c = std::os::raw::c_int::try_from(line).unwrap_or(std::os::raw::c_int::MIN);
+
+        let message_c_str = filter_str_to_c_string(msg);
+        let filename_c_str = filter_str_to_c_string(filename);
 
         unsafe {
             let logger_raw = self.ptr.as_ref();
@@ -192,4 +193,25 @@ impl Log for UnityRustLogger {
     fn flush(&self) {
         //no-op
     }
+}
+
+/// Make a nul-terminated UTF8 string by replacing all characters with a NUL
+/// in it with the UTF8 replacement character
+fn filter_str_to_c_string(s: &str) -> CString {
+    if !s.as_bytes().contains(&0) {
+        return CString::new(s).expect("No NUL bytes were detected, check invalid");
+    }
+
+    // A NUL byte was found, reconstruct the string char-by-char
+    let mut tmp_str = String::new();
+
+    for c in s.chars() {
+        if c == '\0' {
+            tmp_str.push(char::REPLACEMENT_CHARACTER);
+        } else {
+            tmp_str.push(c);
+        }
+    }
+
+    CString::new(tmp_str).expect("Reconstructed string was invalid")
 }

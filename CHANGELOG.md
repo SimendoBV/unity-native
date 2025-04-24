@@ -2,6 +2,16 @@
 
 This file will document the most important changes for each released version
 
+## [v0.2.6]
+
+### Changes
+
+- Update crate to edition 2024
+
+### Bugfixes
+
+- Logger does not panic anymore when given UTF8 with the NUL codepoint. They are now replaced with `char::REPLACEMENT_CHARACTER`
+
 ## [v0.2.5]
 
 ### Changes

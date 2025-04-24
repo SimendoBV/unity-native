@@ -1,7 +1,7 @@
-use super::marker::MarkerMeta;
-use super::marker::ProfilerMarker;
 use super::EventType;
 use super::UnityProfiler;
+use super::marker::MarkerMeta;
+use super::marker::ProfilerMarker;
 
 #[derive(Debug)]
 pub enum ScopedProfilerSample<'a, 'b, T: MarkerMeta<N>, const N: usize> {
@@ -22,7 +22,7 @@ pub enum ManualProfilerSample<'a, 'b, T: MarkerMeta<N>, const N: usize> {
     },
 }
 
-impl<'a, 'b, T: MarkerMeta<N>, const N: usize> Drop for ScopedProfilerSample<'a, 'b, T, N> {
+impl<T: MarkerMeta<N>, const N: usize> Drop for ScopedProfilerSample<'_, '_, T, N> {
     fn drop(&mut self) {
         match self {
             ScopedProfilerSample::Disabled => {}
@@ -33,7 +33,7 @@ impl<'a, 'b, T: MarkerMeta<N>, const N: usize> Drop for ScopedProfilerSample<'a,
     }
 }
 
-impl<'a, 'b, T: MarkerMeta<N>, const N: usize> ManualProfilerSample<'a, 'b, T, N> {
+impl<T: MarkerMeta<N>, const N: usize> ManualProfilerSample<'_, '_, T, N> {
     pub fn end_sample(&mut self) {
         match self {
             ManualProfilerSample::Disabled => {}
@@ -54,7 +54,7 @@ impl<'a, 'b, T: MarkerMeta<N>, const N: usize> ManualProfilerSample<'a, 'b, T, N
     }
 }
 
-impl<'a, 'b, T: MarkerMeta<N>, const N: usize> Drop for ManualProfilerSample<'a, 'b, T, N> {
+impl<T: MarkerMeta<N>, const N: usize> Drop for ManualProfilerSample<'_, '_, T, N> {
     fn drop(&mut self) {
         if let ManualProfilerSample::Enabled {
             ended,

@@ -156,7 +156,7 @@ impl_from!(f64, Double);
 impl_from!(&'a str, String);
 impl_from!(&'a [u8], Bytes);
 
-impl<'a> MarkerMetaData<'a> {
+impl MarkerMetaData<'_> {
     pub(super) fn to_c_compatible_bytes(self) -> Vec<u8> {
         match self {
             MarkerMetaData::Int32(x) => x.to_ne_bytes().to_vec(),
