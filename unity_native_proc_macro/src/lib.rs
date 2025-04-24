@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, ItemFn};
+use syn::{ItemFn, parse_macro_input};
 
 #[proc_macro_attribute]
 pub fn unity_plugin_load(_: TokenStream, item: TokenStream) -> TokenStream {
@@ -11,7 +11,7 @@ pub fn unity_plugin_load(_: TokenStream, item: TokenStream) -> TokenStream {
     let loader = quote! {
         #input
 
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         #[allow(non_snake_case)]
         extern "stdcall" fn UnityPluginLoad(
             interfaces: *mut unity_native::RawUnityInterfaces,
@@ -34,7 +34,7 @@ pub fn unity_plugin_unload(_: TokenStream, item: TokenStream) -> TokenStream {
     let loader = quote! {
         #input
 
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         #[allow(non_snake_case)]
         extern "stdcall" fn UnityPluginUnload() {
             #fn_ident();

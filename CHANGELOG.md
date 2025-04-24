@@ -2,7 +2,15 @@
 
 This file will document the most important changes for each released version
 
+## [v0.2.7]
+
+### Bugfixes
+- Relaxed version requirements
+- Fixed unsafe attribute in macro
+
 ## [v0.2.6]
+
+### **YANKED**
 
 ### Changes
 
