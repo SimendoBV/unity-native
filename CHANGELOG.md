@@ -2,6 +2,17 @@
 
 This file will document the most important changes for each released version
 
+## [v0.3.0]
+
+### Bugfixes
+- Fixed `is_enabled` check for flushing profiling markers
+
+### Changes
+- Tweaked mutability requirement for profiler markers
+
+### Additions
+- Added API functions to register/unregister threads with the Unity profiler
+
 ## [v0.2.7]
 
 ### Bugfixes

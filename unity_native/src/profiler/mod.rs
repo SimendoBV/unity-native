@@ -1,15 +1,15 @@
-use std::ffi::c_void;
 use std::ffi::CString;
+use std::ffi::c_void;
 use std::os::raw::c_int;
+use std::ptr::NonNull;
 use std::ptr::null;
 use std::ptr::null_mut;
-use std::ptr::NonNull;
 
 use thiserror::Error;
 
+use crate::UnityInterface;
 use crate::ffi;
 use crate::unity_api_guid;
-use crate::UnityInterface;
 
 mod marker;
 mod sample;
@@ -101,12 +101,12 @@ impl UnityProfiler {
         unsafe { func() != 0 }
     }
 
-    pub fn create_marker(&mut self, name: &str) -> Result<ProfilerMarker<(), 0>, CreateMarkerErr> {
+    pub fn create_marker(&self, name: &str) -> Result<ProfilerMarker<(), 0>, CreateMarkerErr> {
         self.create_marker_with_data::<(), 0>(name)
     }
 
     pub fn create_marker_with_data<MetaType: MarkerMeta<N>, const N: usize>(
-        &mut self,
+        &self,
         name: &str,
     ) -> Result<ProfilerMarker<MetaType, N>, CreateMarkerErr> {
         debug_assert!(
@@ -164,7 +164,7 @@ impl UnityProfiler {
         event: EventType,
         meta: Option<&T>,
     ) {
-        debug_assert!(self.is_enabled());
+        debug_assert!(self.available);
         debug_assert!(!marker.raw().is_null());
 
         unsafe {
@@ -200,4 +200,62 @@ impl UnityProfiler {
             }
         }
     }
+
+    pub fn register_current_thread(
+        &self,
+        group_name: &str,
+        thread_name: &str,
+    ) -> Result<UnityThreadId, RegisterThreadErr> {
+        if !group_name.is_ascii() || !thread_name.is_ascii() {
+            return Err(RegisterThreadErr::NonAscii);
+        }
+
+        assert!(group_name.is_ascii(), "Group name must be ASCII");
+        assert!(thread_name.is_ascii(), "Thread name must be ASCII");
+
+        let mut out_thread_id = 0;
+        let group_name_c = CString::new(group_name).map_err(|_| RegisterThreadErr::Nul)?;
+        let thread_name_c = CString::new(thread_name).map_err(|_| RegisterThreadErr::Nul)?;
+
+        let result = unsafe {
+            self.ptr.as_ref().RegisterThread.unwrap()(
+                &raw mut out_thread_id,
+                group_name_c.as_ptr(),
+                thread_name_c.as_ptr(),
+            )
+        };
+
+        match result {
+            0 => Ok(UnityThreadId(out_thread_id)),
+            other => Err(RegisterThreadErr::Unity(other)),
+        }
+    }
+
+    pub fn unregister_thread(&self, thread_id: UnityThreadId) -> Result<(), c_int> {
+        let result = unsafe { self.ptr.as_ref().UnregisterThread.unwrap()(thread_id.0) };
+
+        match result {
+            0 => Ok(()),
+            other => Err(other),
+        }
+    }
+
+    pub fn unregister_current_thread(&self) -> Result<(), c_int> {
+        self.unregister_thread(UnityThreadId(0))
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UnityThreadId(ffi::UnityProfilerThreadId);
+
+#[derive(Debug, Error)]
+pub enum RegisterThreadErr {
+    #[error("Group or thread name contained non-ascii characters")]
+    NonAscii,
+
+    #[error("Group or thread name contained nul-bytes")]
+    Nul,
+
+    #[error("Unity API returned an error code: {}", .0)]
+    Unity(c_int),
 }

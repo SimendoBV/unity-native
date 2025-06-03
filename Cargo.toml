@@ -3,7 +3,7 @@ resolver = "2"
 members = ["unity_native", "unity_native_proc_macro", "unity_native_sys"]
 
 [workspace.package]
-version = "0.2.7"
+version = "0.3.0"
 edition = "2024"
 authors = ["Wouter de Bruijn <wouter@wutru.io>"]
 repository = "https://github.com/cloone8/unity-native"
@@ -12,9 +12,9 @@ keywords = []
 categories = []
 
 [workspace.dependencies]
-unity_native = { path = "unity_native", version = "0.2.7" }
-unity_native_proc_macro = { path = "unity_native_proc_macro", version = "0.2.7" }
-unity_native_sys = { path = "unity_native_sys", version = "0.2.7" }
+unity_native = { path = "unity_native", version = "0.3.0" }
+unity_native_proc_macro = { path = "unity_native_proc_macro", version = "0.3.0" }
+unity_native_sys = { path = "unity_native_sys", version = "0.3.0" }
 bindgen = "0.71"
 syn = "2.0"
 quote = "1.0"
